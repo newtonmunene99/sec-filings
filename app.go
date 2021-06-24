@@ -16,6 +16,7 @@ import (
 
 	"cloud.google.com/go/bigquery"
 	"cloud.google.com/go/storage"
+	"github.com/joho/godotenv"
 	"google.golang.org/api/googleapi"
 )
 
@@ -50,23 +51,31 @@ type IndexData struct {
 const baseUrl string = "https://www.sec.gov/Archives/edgar"
 
 // The GCP Project Id
-const projectID string = "alis-recruiting-7466497"
+var projectID string
 
 // The GCS Bucket Name
-const bucketName string = "sec-edgar-files"
+var bucketName string
 
 // The BigQuery Dataset Id
-const datasetID string = "sec_edgar_files"
+var datasetID string
 
 // Define a wait group that will help in synchronization of goroutines
 var waitGroup sync.WaitGroup
 
 // Runs after global variables have been initialized. We can use this to set a few things before the program runs
 func init() {
-	// Set the GOOGLE_APPLICATION_CREDENTIALS environment variable that is required to authenticate to Google APIs. We point to our credentials file. From my experience with other languages, Ideally you would want to load environment variables from a .env file. For the simplicity of this, we'll set it manually
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "credentials.json")
 
-	fmt.Println("GOOGLE_APPLICATION_CREDENTIALS has been set")
+	// load .env file
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	projectID = os.Getenv("GCP_PROJECT_ID")
+	bucketName = os.Getenv("GCS_BUCKET_NAME")
+	datasetID = os.Getenv("BIG_QUERY_DATASET_ID")
+
 }
 
 func main() {
